@@ -23,3 +23,5 @@ deployments
 # crytic and echidna
 crytic-export/ 
 corpus
+
+*.log

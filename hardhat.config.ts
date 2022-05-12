@@ -31,6 +31,7 @@ const config: HardhatUserConfig = {
       4: process.env.KOVAN_DEPLOYER_ADDRESS || "",
     },
   },
+  defaultNetwork: "hardhat",
   networks: {
     kovan: {
       live: true,
@@ -52,15 +53,14 @@ const config: HardhatUserConfig = {
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
+    localhost: {},
     hardhat: {
-      mining: {
-        auto: true,
-        interval: 10,
-      },
-      forking: {
-        blockNumber: 10453255,
-        url: process.env.KOVAN_RPC_URL || "",
-      },
+      // loggingEnabled: true, // To enable more verbose output.
+      // Uncomment below to enable launch local node with fork from Kovan.
+      // forking: {
+      //   blockNumber: 10453255,
+      //   url: process.env.KOVAN_RPC_URL || "",
+      // },
     },
   },
   gasReporter: {
