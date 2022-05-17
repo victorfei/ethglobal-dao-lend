@@ -98,7 +98,8 @@ contract BondFactory is IBondFactory, AccessControl {
         address collateralToken,
         uint256 collateralTokenAmount,
         uint256 convertibleTokenAmount,
-        uint256 bonds
+        uint256 bonds,
+        string memory daoName
     ) external onlyIssuer returns (address clone) {
         if (bonds == 0) {
             revert ZeroBondsToMint();
@@ -155,7 +156,8 @@ contract BondFactory is IBondFactory, AccessControl {
             collateralToken,
             collateralTokenAmount,
             convertibleTokenAmount,
-            bonds
+            bonds,
+            daoName
         );
     }
 
