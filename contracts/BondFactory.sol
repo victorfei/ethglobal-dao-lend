@@ -45,10 +45,10 @@ contract BondFactory is IBondFactory, AccessControl {
     mapping(address => bool) public isBond;
 
     /// @inheritdoc IBondFactory
-    bool public isIssuerAllowListEnabled = true;
+    bool public isIssuerAllowListEnabled = false;
 
     /// @inheritdoc IBondFactory
-    bool public isTokenAllowListEnabled = true;
+    bool public isTokenAllowListEnabled = false;
 
     /**
         @dev If allow list is enabled, only allow-listed issuers are
