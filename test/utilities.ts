@@ -227,6 +227,8 @@ export const createBond = async (
 ) => {
   const paymentToken = paymentTokenContract.address;
   const collateralToken = collateralTokenContract.address;
+  const daoName = "hello";
+
   const { bondName, bondSymbol } = await getBondInfo(
     paymentTokenContract,
     collateralTokenContract,
@@ -241,7 +243,8 @@ export const createBond = async (
       collateralToken,
       config.collateralTokenAmount,
       config.convertibleTokenAmount,
-      config.maxSupply
+      config.maxSupply,
+      daoName
     )
   );
   return await bond;
