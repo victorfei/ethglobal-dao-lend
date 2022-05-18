@@ -42,7 +42,8 @@ interface IBondFactory {
         address indexed collateralToken,
         uint256 collateralTokenAmount,
         uint256 convertibleTokenAmount,
-        uint256 bonds
+        uint256 bonds,
+        string daoName
     );
 
     /// @notice Fails if the collateralToken takes a fee.
@@ -87,7 +88,8 @@ interface IBondFactory {
         address collateralToken,
         uint256 collateralTokenAmount,
         uint256 convertibleTokenAmount,
-        uint256 bonds
+        uint256 bonds,
+        string memory daoName
     ) external returns (address clone);
 
     /**  
