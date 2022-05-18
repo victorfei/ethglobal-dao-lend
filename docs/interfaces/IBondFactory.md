@@ -73,6 +73,10 @@ Emitted when a new bond is created.
         <td>
     The amount of bond shares to give to the owner during the one-time mint during the `Bond`&#39;s `initialize`.    </td>
       </tr>
+  <tr>
+    <td>string </td>
+    <td>daoName</td>
+      </tr>
 </table>
 
 ### IssuerAllowListEnabled
@@ -150,7 +154,7 @@ Emitted when the restriction of collateralToken and paymentToken to allow-listed
 ### createBond
 
 ```solidity
-function createBond(string name, string symbol, uint256 maturity, address paymentToken, address collateralToken, uint256 collateralTokenAmount, uint256 convertibleTokenAmount, uint256 bonds) external nonpayable returns (address clone)
+function createBond(string name, string symbol, uint256 maturity, address paymentToken, address collateralToken, uint256 collateralTokenAmount, uint256 convertibleTokenAmount, uint256 bonds, string daoName) external nonpayable returns (address clone)
 ```
 
 Creates a new Bond. The calculated ratios are rounded down.
@@ -205,6 +209,10 @@ Creates a new Bond. The calculated ratios are rounded down.
     <td>bonds</td>
         <td>
     The amount of Bonds given to the owner during the one-time mint during the `Bond`&#39;s `initialize`.    </td>
+      </tr>
+  <tr>
+    <td>string </td>
+    <td>daoName</td>
       </tr>
 </table>
 

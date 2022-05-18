@@ -127,25 +127,31 @@ contract BondFactory is IBondFactory, AccessControl {
             _checkRole(ALLOWED_TOKEN, collateralToken);
         }
 
-        clone = Clones.clone(tokenImplementation);
+        {
+            clone = Clones.clone(tokenImplementation);
 
-        isBond[clone] = true;
-        uint256 collateralRatio = collateralTokenAmount.divWadDown(bonds);
-        uint256 convertibleRatio = convertibleTokenAmount.divWadDown(bonds);
-        _deposit(_msgSender(), clone, collateralToken, collateralTokenAmount);
+            isBond[clone] = true;
+            uint256 collateralRatio = collateralTokenAmount.divWadDown(bonds);
+            uint256 convertibleRatio = convertibleTokenAmount.divWadDown(bonds);
+            _deposit(
+                _msgSender(),
+                clone,
+                collateralToken,
+                collateralTokenAmount
+            );
 
-        Bond(clone).initialize(
-            name,
-            symbol,
-            _msgSender(),
-            maturity,
-            paymentToken,
-            collateralToken,
-            collateralRatio,
-            convertibleRatio,
-            bonds
-        );
-
+            Bond(clone).initialize(
+                name,
+                symbol,
+                _msgSender(),
+                maturity,
+                paymentToken,
+                collateralToken,
+                collateralRatio,
+                convertibleRatio,
+                bonds
+            );
+        }
         emit BondCreated(
             clone,
             name,
