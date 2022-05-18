@@ -1,4 +1,5 @@
 # ethglobal-dao-lend-contracts
+
 Bonds issuance for DAOs.
 Note: Friendly fork of Smart Contracts from Porter Finance.
 
@@ -7,6 +8,7 @@ Note: Friendly fork of Smart Contracts from Porter Finance.
 For local development there are environment variables necessary to enable some hardhat plugins.
 
 # Compile
+
 ```
 TS_NODE_TRANSPILE_ONLY=1 npx hardhat compile.
 Note: Without TS_NODE_TRANSPILE_ONLY=1 flag, compiling may result in error that generated 'typechain' artifact/folder does not exist.
@@ -25,6 +27,7 @@ npx hardhat deploy --tags auctions # and start bond auctions
 npx hardhat deploy --tags actions # and do bond actions
 ```
 
+npx hardhat deploy --network kovan
 Additionally, all of the above commands can be run with `--network kovan` to deploy to the Kovan test network.
 
 Note: The deploy script will run with the `npx hardhat node` as well as the `npx hardhat test` tasks.

@@ -45,10 +45,10 @@ contract BondFactory is IBondFactory, AccessControl {
     mapping(address => bool) public isBond;
 
     /// @inheritdoc IBondFactory
-    bool public isIssuerAllowListEnabled = true;
+    bool public isIssuerAllowListEnabled = false;
 
     /// @inheritdoc IBondFactory
-    bool public isTokenAllowListEnabled = true;
+    bool public isTokenAllowListEnabled = false;
 
     /**
         @dev If allow list is enabled, only allow-listed issuers are
@@ -98,7 +98,8 @@ contract BondFactory is IBondFactory, AccessControl {
         address collateralToken,
         uint256 collateralTokenAmount,
         uint256 convertibleTokenAmount,
-        uint256 bonds
+        uint256 bonds,
+        string memory daoName
     ) external onlyIssuer returns (address clone) {
         if (bonds == 0) {
             revert ZeroBondsToMint();
@@ -126,25 +127,31 @@ contract BondFactory is IBondFactory, AccessControl {
             _checkRole(ALLOWED_TOKEN, collateralToken);
         }
 
-        clone = Clones.clone(tokenImplementation);
+        {
+            clone = Clones.clone(tokenImplementation);
 
-        isBond[clone] = true;
-        uint256 collateralRatio = collateralTokenAmount.divWadDown(bonds);
-        uint256 convertibleRatio = convertibleTokenAmount.divWadDown(bonds);
-        _deposit(_msgSender(), clone, collateralToken, collateralTokenAmount);
+            isBond[clone] = true;
+            uint256 collateralRatio = collateralTokenAmount.divWadDown(bonds);
+            uint256 convertibleRatio = convertibleTokenAmount.divWadDown(bonds);
+            _deposit(
+                _msgSender(),
+                clone,
+                collateralToken,
+                collateralTokenAmount
+            );
 
-        Bond(clone).initialize(
-            name,
-            symbol,
-            _msgSender(),
-            maturity,
-            paymentToken,
-            collateralToken,
-            collateralRatio,
-            convertibleRatio,
-            bonds
-        );
-
+            Bond(clone).initialize(
+                name,
+                symbol,
+                _msgSender(),
+                maturity,
+                paymentToken,
+                collateralToken,
+                collateralRatio,
+                convertibleRatio,
+                bonds
+            );
+        }
         emit BondCreated(
             clone,
             name,
@@ -155,7 +162,8 @@ contract BondFactory is IBondFactory, AccessControl {
             collateralToken,
             collateralTokenAmount,
             convertibleTokenAmount,
-            bonds
+            bonds,
+            daoName
         );
     }
 
