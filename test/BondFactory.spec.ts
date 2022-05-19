@@ -80,7 +80,8 @@ describe("BondFactory", async () => {
       testCollateralToken,
       testCollateralTokenAmount,
       testConvertibleTokenAmount,
-      testMaxSupply
+      testMaxSupply,
+      "Uniswap"
     );
   }
 
