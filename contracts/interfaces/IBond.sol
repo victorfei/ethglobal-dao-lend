@@ -168,13 +168,7 @@ interface IBond {
         @return The number of convertibleTokens per Bond.
     */
     function convertibleRatio() external view returns (uint256);
-
-     /**
-        @notice The number bonds remaining (unsold)
-        @return The number of bonds remaining
-    */
-    function supplyRemaining() external view returns (uint256);
-
+    
     /**
         @notice This one-time setup initiated by the BondFactory initializes the
             Bond with the given configuration.

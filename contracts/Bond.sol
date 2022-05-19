@@ -56,8 +56,6 @@ contract Bond is
     /// @inheritdoc IBond
     uint256 public convertibleRatio;
 
-    /// @inheritdoc IBond
-    uint256 public supplyRemaining;
 
     /**
         @dev Confirms the Bond has not yet matured. This is used on the
@@ -117,7 +115,6 @@ contract Bond is
         collateralToken = _collateralToken;
         collateralRatio = _collateralRatio;
         convertibleRatio = _convertibleRatio;
-        supplyRemaining = maxSupply;
 
         _mint(address(this), maxSupply);
     }
@@ -411,25 +408,23 @@ contract Bond is
 
     /// @inheritdoc IBond
     function purchaseBond(uint256 amount) external {
-        if (amount > IERC20Metadata(paymentToken).allowance(msg.sender, address(this))) {
+        address bondContract = address(this);
+        if (amount > IERC20Metadata(paymentToken).allowance(msg.sender, bondContract)) {
             revert NotEnoughPaymentTokenAllowed();
         }
 
-        if (amount > supplyRemaining) {
+        if (amount > balanceOf(bondContract)) {
             revert NotEnoughSupply();
         }
-
-        // Reduce supply
-        supplyRemaining = supplyRemaining - amount;
 
         // Transfers the payment token to the owner. Reverts if there is not enough
         IERC20Metadata(paymentToken).safeTransferFrom(msg.sender, owner(), amount);
 
         // Transfers the bonds to the buyer
-        _approve(address(this), msg.sender, amount);
-        transferFrom(address(this), msg.sender, amount);
+        _approve(bondContract, msg.sender, amount);
+        transferFrom(bondContract, msg.sender, amount);
 
-        emit BondPurchased(msg.sender, amount, supplyRemaining);
+        emit BondPurchased(msg.sender, amount, balanceOf(bondContract));
     }
 
     /// @inheritdoc IBond
