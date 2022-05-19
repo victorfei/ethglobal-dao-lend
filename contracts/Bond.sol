@@ -410,6 +410,29 @@ contract Bond is
     }
 
     /// @inheritdoc IBond
+    function purchaseBond(uint256 amount) external {
+        if (amount > IERC20Metadata(paymentToken).allowance(msg.sender, address(this))) {
+            revert NotEnoughPaymentTokenAllowed();
+        }
+
+        if (amount > supplyRemaining) {
+            revert NotEnoughSupply();
+        }
+
+        // Reduce supply
+        supplyRemaining = supplyRemaining - amount;
+
+        // Transfers the payment token to the owner. Reverts if there is not enough
+        IERC20Metadata(paymentToken).safeTransferFrom(msg.sender, owner(), amount);
+
+        // Transfers the bonds to the buyer
+        _approve(address(this), msg.sender, amount);
+        transferFrom(address(this), msg.sender, amount);
+
+        emit BondPurchased(msg.sender, amount, supplyRemaining);
+    }
+
+    /// @inheritdoc IBond
     function collateralBalance()
         public
         view

@@ -28,6 +28,12 @@ interface IBond {
     /// @notice Attempted to withdraw more collateral than available.
     error NotEnoughCollateral();
 
+    /// @notice Attempted purchase bonds without enough paymentToken allowed
+    error NotEnoughPaymentTokenAllowed();
+
+    /// @notice Attempted purchase more bonds than the supply
+    error NotEnoughSupply();
+
     /**
         @notice Emitted when bond shares are converted by a Bond holder.
         @param from The address converting their tokens.
@@ -110,6 +116,8 @@ interface IBond {
         IERC20Metadata token,
         uint256 amount
     );
+
+    event BondPurchased(address buyer, uint256 amount, uint256 supplyRemaining);
 
     /**
         @notice The amount of paymentTokens required to fully pay the contract.
@@ -344,6 +352,13 @@ interface IBond {
         external
         view
         returns (uint256 paymentTokens);
+
+     /**
+        @notice Directly purchases the bond from the contract. Bonds can only purchased
+        using the payment token specified in the contract. 
+        @param amount The amount to purchase
+    */
+    function purchaseBond(uint256 amount) external;
 
     /**
         @notice The Bond holder can burn bond shares in return for their portion
