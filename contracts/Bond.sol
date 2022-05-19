@@ -57,6 +57,9 @@ contract Bond is
     /// @inheritdoc IBond
     uint256 public convertibleRatio;
 
+    /// @inheritdoc IBond
+    uint256 public supplyRemaining;
+
     /**
         @dev Confirms the Bond has not yet matured. This is used on the
             `convert` function because bond shares are convertible only before
@@ -115,6 +118,7 @@ contract Bond is
         collateralToken = _collateralToken;
         collateralRatio = _collateralRatio;
         convertibleRatio = _convertibleRatio;
+        supplyRemaining = maxSupply;
 
         _mint(bondOwner, maxSupply);
     }
