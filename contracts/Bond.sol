@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity 0.8.9;
-
 import {IBond} from "./interfaces/IBond.sol";
 
 import {ERC20BurnableUpgradeable, IERC20MetadataUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20BurnableUpgradeable.sol";
@@ -120,7 +119,7 @@ contract Bond is
         convertibleRatio = _convertibleRatio;
         supplyRemaining = maxSupply;
 
-        _mint(bondOwner, maxSupply);
+        _mint(address(this), maxSupply);
     }
 
     /// @inheritdoc IBond
