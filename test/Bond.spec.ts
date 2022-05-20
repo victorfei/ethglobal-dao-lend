@@ -1131,7 +1131,7 @@ describe("Bond", () => {
             config = bondWithTokens.nonConvertible.config;
             await paymentToken.transfer(
               bondBuyer.address,
-              ethers.constants.Two
+              ethers.constants.One.mul(100) // Approve for 100
             );
           });
 
@@ -1158,15 +1158,14 @@ describe("Bond", () => {
           });
 
           it("should transfer the bond to the buyer", async () => {
+            const seventeen = ethers.constants.One.mul(17);
             await paymentToken
               .connect(bondBuyer)
-              .approve(bond.address, ethers.constants.Two);
+              .approve(bond.address, seventeen);
 
-            await bond.connect(bondBuyer).purchaseBond(ethers.constants.One); // Just buying 1
+            await bond.connect(bondBuyer).purchaseBond(seventeen);
 
-            expect(await bond.balanceOf(bondBuyer.address)).to.eq(
-              ethers.constants.One
-            );
+            expect(await bond.balanceOf(bondBuyer.address)).to.eq(seventeen);
           });
         });
       });
