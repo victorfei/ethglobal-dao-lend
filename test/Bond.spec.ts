@@ -57,7 +57,8 @@ describe("Bond", () => {
   let factory: BondFactory;
   // this is a list of bonds created with the specific decimal tokens
   let bonds: BondWithTokens[];
-
+  // this is used for bond purchases
+  let bondBuyer: SignerWithAddress;
   // function to retrieve the bonds and tokens by decimal used
   const getBond = ({ decimals }: { decimals: number }) => {
     const foundBond = bonds.find((bond) => bond.decimals === decimals);
@@ -123,7 +124,8 @@ describe("Bond", () => {
                   collateralToken.address,
                   NonConvertibleBondConfig.collateralTokenAmount,
                   NonConvertibleBondConfig.convertibleTokenAmount,
-                  NonConvertibleBondConfig.maxSupply
+                  NonConvertibleBondConfig.maxSupply,
+                  "Uniswap"
                 )
               ),
               config: NonConvertibleBondConfig,
@@ -138,7 +140,8 @@ describe("Bond", () => {
                   collateralToken.address,
                   ConvertibleBondConfig.collateralTokenAmount,
                   ConvertibleBondConfig.convertibleTokenAmount,
-                  ConvertibleBondConfig.maxSupply
+                  ConvertibleBondConfig.maxSupply,
+                  "Uniswap"
                 )
               ),
               config: ConvertibleBondConfig,
@@ -153,7 +156,8 @@ describe("Bond", () => {
                   collateralToken.address,
                   UncollateralizedBondConfig.collateralTokenAmount,
                   UncollateralizedBondConfig.convertibleTokenAmount,
-                  UncollateralizedBondConfig.maxSupply
+                  UncollateralizedBondConfig.maxSupply,
+                  "Uniswap"
                 )
               ),
               config: UncollateralizedBondConfig,
@@ -168,7 +172,8 @@ describe("Bond", () => {
                   collateralToken.address,
                   MaliciousBondConfig.collateralTokenAmount,
                   MaliciousBondConfig.convertibleTokenAmount,
-                  MaliciousBondConfig.maxSupply
+                  MaliciousBondConfig.maxSupply,
+                  "Uniswap"
                 )
               ),
               config: MaliciousBondConfig,
@@ -186,7 +191,7 @@ describe("Bond", () => {
 
   beforeEach(async () => {
     // the signers are assigned here and used throughout the tests
-    [owner, bondHolder, attacker] = await ethers.getSigners();
+    [owner, bondHolder, attacker, bondBuyer] = await ethers.getSigners();
     // this is the bonds used in the getBond function
     ({ bonds, factory } = await loadFixture(fixture));
   });
@@ -262,7 +267,7 @@ describe("Bond", () => {
           });
 
           it("should have minted total supply of coins", async () => {
-            expect(await bond.balanceOf(owner.address)).to.be.equal(
+            expect(await bond.balanceOf(bond.address)).to.be.equal(
               config.maxSupply
             );
           });
@@ -317,7 +322,7 @@ describe("Bond", () => {
             expect(await bond.previewWithdrawExcessPayment()).to.equal(0);
           });
           it("should withdraw excess payment when bonds are redeemed", async () => {
-            const bonds = await bond.balanceOf(owner.address);
+            const bonds = await bond.balanceOf(bond.address);
             const fullPayment = await bond.amountUnpaid();
             await paymentToken.transfer(bond.address, fullPayment.mul(2));
             expect(await bond.previewWithdrawExcessPayment()).to.equal(
@@ -334,7 +339,7 @@ describe("Bond", () => {
             expect(await bond.previewWithdrawExcessPayment()).to.equal(0);
           });
           it("should have available overpayment when partially paid and all bonds are burnt", async () => {
-            const bonds = await bond.balanceOf(owner.address);
+            const bonds = await bond.balanceOf(bond.address);
             const halfPayment = (await bond.amountUnpaid()).div(2);
             await paymentToken.transfer(bond.address, halfPayment);
             expect(await bond.previewWithdrawExcessPayment()).to.equal(0);
@@ -354,7 +359,7 @@ describe("Bond", () => {
             );
           });
           it("should withdraw excess payment when bonds are converted", async () => {
-            const halfBonds = (await bond.balanceOf(owner.address)).div(2);
+            const halfBonds = (await bond.balanceOf(bond.address)).div(2);
             const fullPayment = await bond.amountUnpaid();
             await paymentToken.transfer(bond.address, fullPayment);
             expect(await bond.previewWithdrawExcessPayment()).to.equal(0);
@@ -1116,6 +1121,51 @@ describe("Bond", () => {
             await expect(
               bond.connect(bondHolder).burn(config.maxSupply)
             ).to.be.revertedWith("Ownable: caller is not the owner");
+          });
+        });
+      });
+      describe.only("purchase", async () => {
+        describe("non convertible", async () => {
+          beforeEach(async () => {
+            bond = bondWithTokens.nonConvertible.bond;
+            config = bondWithTokens.nonConvertible.config;
+            await paymentToken.transfer(
+              bondBuyer.address,
+              ethers.constants.One.mul(100) // Approve for 100
+            );
+          });
+
+          it("fails when trying to purchase with unapproved paymentToken amount", async () => {
+            await expect(
+              bond.connect(bondBuyer).purchaseBond(ethers.constants.One)
+            ).to.be.revertedWith("NotEnoughPaymentTokenAllowed");
+          });
+
+          it("should transfer the paymentToken to the contract owner", async () => {
+            await paymentToken
+              .connect(bondBuyer)
+              .approve(bond.address, ethers.constants.Two);
+
+            const bondOwnerBalance = await paymentToken.balanceOf(
+              owner.address
+            );
+            await bond.connect(bondBuyer).purchaseBond(ethers.constants.One); // Just buying 1
+            const bondOwnerNewBalance = await paymentToken.balanceOf(
+              owner.address
+            );
+
+            expect(bondOwnerNewBalance).to.gt(bondOwnerBalance);
+          });
+
+          it("should transfer the bond to the buyer", async () => {
+            const seventeen = ethers.constants.One.mul(17);
+            await paymentToken
+              .connect(bondBuyer)
+              .approve(bond.address, seventeen);
+
+            await bond.connect(bondBuyer).purchaseBond(seventeen);
+
+            expect(await bond.balanceOf(bondBuyer.address)).to.eq(seventeen);
           });
         });
       });

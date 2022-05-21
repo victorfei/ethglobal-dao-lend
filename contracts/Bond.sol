@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity 0.8.9;
-
 import {IBond} from "./interfaces/IBond.sol";
 
 import {ERC20BurnableUpgradeable, IERC20MetadataUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20BurnableUpgradeable.sol";
@@ -56,6 +55,7 @@ contract Bond is
 
     /// @inheritdoc IBond
     uint256 public convertibleRatio;
+
 
     /**
         @dev Confirms the Bond has not yet matured. This is used on the
@@ -116,7 +116,7 @@ contract Bond is
         collateralRatio = _collateralRatio;
         convertibleRatio = _convertibleRatio;
 
-        _mint(bondOwner, maxSupply);
+        _mint(address(this), maxSupply);
     }
 
     /// @inheritdoc IBond
@@ -404,6 +404,27 @@ contract Bond is
         }
 
         paymentTokens = _paymentBalance - bondSupply;
+    }
+
+    /// @inheritdoc IBond
+    function purchaseBond(uint256 amount) external {
+        address bondContract = address(this);
+        if (amount > IERC20Metadata(paymentToken).allowance(msg.sender, bondContract)) {
+            revert NotEnoughPaymentTokenAllowed();
+        }
+
+        if (amount > balanceOf(bondContract)) {
+            revert NotEnoughSupply();
+        }
+
+        // Transfers the payment token to the owner. Reverts if there is not enough
+        IERC20Metadata(paymentToken).safeTransferFrom(msg.sender, owner(), amount);
+
+        // Transfers the bonds to the buyer
+        _approve(bondContract, msg.sender, amount);
+        transferFrom(bondContract, msg.sender, amount);
+
+        emit BondPurchased(msg.sender, amount, balanceOf(bondContract));
     }
 
     /// @inheritdoc IBond

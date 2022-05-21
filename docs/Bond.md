@@ -27,6 +27,28 @@ A custom ERC20 token that can be used to issue bonds.The contract handles issuan
       </tr>
 </table>
 
+### BondPurchased
+
+
+
+
+
+
+<table>
+  <tr>
+    <td>address </td>
+    <td>buyer</td>
+      </tr>
+  <tr>
+    <td>uint256 </td>
+    <td>amount</td>
+      </tr>
+  <tr>
+    <td>uint256 </td>
+    <td>supplyRemaining</td>
+      </tr>
+</table>
+
 ### CollateralWithdraw
 
 Emitted when collateral is withdrawn.
@@ -258,6 +280,16 @@ Emitted when a token is swept by the contract owner.
 
 ### NotEnoughCollateral
 * Attempted to withdraw more collateral than available.
+
+
+
+### NotEnoughPaymentTokenAllowed
+* Attempted purchase bonds without enough paymentToken allowed
+
+
+
+### NotEnoughSupply
+* Attempted purchase more bonds than the supply
 
 
 
@@ -988,6 +1020,26 @@ The number of excess paymentTokens that the owner would be able to withdraw from
     The number of paymentTokens that would be withdrawn.    </td>
       </tr>
 </table>
+
+### purchaseBond
+
+```solidity
+function purchaseBond(uint256 amount) external nonpayable
+```
+
+Directly purchases the bond from the contract. Bonds can only purchased using the payment token specified in the contract. 
+
+#### Parameters
+
+<table>
+  <tr>
+    <td>uint256 </td>
+    <td>amount</td>
+        <td>
+    The amount to purchase    </td>
+      </tr>
+</table>
+
 
 ### redeem
 

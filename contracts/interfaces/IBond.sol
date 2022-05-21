@@ -28,6 +28,12 @@ interface IBond {
     /// @notice Attempted to withdraw more collateral than available.
     error NotEnoughCollateral();
 
+    /// @notice Attempted purchase bonds without enough paymentToken allowed
+    error NotEnoughPaymentTokenAllowed();
+
+    /// @notice Attempted purchase more bonds than the supply
+    error NotEnoughSupply();
+
     /**
         @notice Emitted when bond shares are converted by a Bond holder.
         @param from The address converting their tokens.
@@ -111,6 +117,8 @@ interface IBond {
         uint256 amount
     );
 
+    event BondPurchased(address buyer, uint256 amount, uint256 supplyRemaining);
+
     /**
         @notice The amount of paymentTokens required to fully pay the contract.
         @return paymentTokens The number of paymentTokens unpaid.
@@ -160,7 +168,7 @@ interface IBond {
         @return The number of convertibleTokens per Bond.
     */
     function convertibleRatio() external view returns (uint256);
-
+    
     /**
         @notice This one-time setup initiated by the BondFactory initializes the
             Bond with the given configuration.
@@ -338,6 +346,13 @@ interface IBond {
         external
         view
         returns (uint256 paymentTokens);
+
+     /**
+        @notice Directly purchases the bond from the contract. Bonds can only purchased
+        using the payment token specified in the contract. 
+        @param amount The amount to purchase
+    */
+    function purchaseBond(uint256 amount) external;
 
     /**
         @notice The Bond holder can burn bond shares in return for their portion
