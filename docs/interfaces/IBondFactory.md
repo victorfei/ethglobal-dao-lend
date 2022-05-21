@@ -50,24 +50,6 @@ Emitted when a new bond is created.
     The ERC20 token address the Bond is redeemable for.    </td>
       </tr>
   <tr>
-    <td>address <code>indexed</code></td>
-    <td>collateralToken</td>
-        <td>
-    The ERC20 token address the Bond is backed by.    </td>
-      </tr>
-  <tr>
-    <td>uint256 </td>
-    <td>collateralTokenAmount</td>
-        <td>
-    The amount of collateral tokens per bond.    </td>
-      </tr>
-  <tr>
-    <td>uint256 </td>
-    <td>convertibleTokenAmount</td>
-        <td>
-    The amount of convertible tokens per bond.    </td>
-      </tr>
-  <tr>
     <td>uint256 </td>
     <td>bonds</td>
         <td>
@@ -115,11 +97,6 @@ Emitted when the restriction of collateralToken and paymentToken to allow-listed
 
 ## Errors
 
-### CollateralTokenAmountLessThanConvertibleTokenAmount
-* There must be more collateralTokens than convertibleTokens.
-
-
-
 ### InvalidDeposit
 * Fails if the collateralToken takes a fee.
 
@@ -154,7 +131,7 @@ Emitted when the restriction of collateralToken and paymentToken to allow-listed
 ### createBond
 
 ```solidity
-function createBond(string name, string symbol, uint256 maturity, address paymentToken, address collateralToken, uint256 collateralTokenAmount, uint256 convertibleTokenAmount, uint256 bonds, string daoName) external nonpayable returns (address clone)
+function createBond(string name, string symbol, uint256 maturity, address paymentToken, uint256 bonds, string daoName) external nonpayable returns (address clone)
 ```
 
 Creates a new Bond. The calculated ratios are rounded down.
@@ -185,24 +162,6 @@ Creates a new Bond. The calculated ratios are rounded down.
     <td>paymentToken</td>
         <td>
     The ERC20 token address the Bond is redeemable for.    </td>
-      </tr>
-  <tr>
-    <td>address </td>
-    <td>collateralToken</td>
-        <td>
-    The ERC20 token address the Bond is backed by.    </td>
-      </tr>
-  <tr>
-    <td>uint256 </td>
-    <td>collateralTokenAmount</td>
-        <td>
-    The amount of collateral tokens per bond.    </td>
-      </tr>
-  <tr>
-    <td>uint256 </td>
-    <td>convertibleTokenAmount</td>
-        <td>
-    The amount of convertible tokens per bond.    </td>
       </tr>
   <tr>
     <td>uint256 </td>

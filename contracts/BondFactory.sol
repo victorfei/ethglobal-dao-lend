@@ -95,50 +95,30 @@ contract BondFactory is IBondFactory, AccessControl {
         string memory symbol,
         uint256 maturity,
         address paymentToken,
-        address collateralToken,
-        uint256 collateralTokenAmount,
-        uint256 convertibleTokenAmount,
         uint256 bonds,
         string memory daoName
     ) external onlyIssuer returns (address clone) {
         if (bonds == 0) {
             revert ZeroBondsToMint();
         }
-        if (paymentToken == collateralToken) {
-            revert TokensMustBeDifferent();
-        }
-        if (collateralTokenAmount < convertibleTokenAmount) {
-            revert CollateralTokenAmountLessThanConvertibleTokenAmount();
-        }
+
         if (
             maturity <= block.timestamp ||
             maturity > block.timestamp + MAX_TIME_TO_MATURITY
         ) {
             revert InvalidMaturity();
         }
-        if (
-            IERC20Metadata(paymentToken).decimals() > MAX_DECIMALS ||
-            IERC20Metadata(collateralToken).decimals() > MAX_DECIMALS
-        ) {
+        if (IERC20Metadata(paymentToken).decimals() > MAX_DECIMALS) {
             revert TooManyDecimals();
         }
         if (isTokenAllowListEnabled) {
             _checkRole(ALLOWED_TOKEN, paymentToken);
-            _checkRole(ALLOWED_TOKEN, collateralToken);
         }
 
         {
             clone = Clones.clone(tokenImplementation);
 
             isBond[clone] = true;
-            uint256 collateralRatio = collateralTokenAmount.divWadDown(bonds);
-            uint256 convertibleRatio = convertibleTokenAmount.divWadDown(bonds);
-            _deposit(
-                _msgSender(),
-                clone,
-                collateralToken,
-                collateralTokenAmount
-            );
 
             Bond(clone).initialize(
                 name,
@@ -146,9 +126,6 @@ contract BondFactory is IBondFactory, AccessControl {
                 _msgSender(),
                 maturity,
                 paymentToken,
-                collateralToken,
-                collateralRatio,
-                convertibleRatio,
                 bonds
             );
         }
@@ -159,36 +136,8 @@ contract BondFactory is IBondFactory, AccessControl {
             _msgSender(),
             maturity,
             paymentToken,
-            collateralToken,
-            collateralTokenAmount,
-            convertibleTokenAmount,
             bonds,
             daoName
         );
-    }
-
-    function _deposit(
-        address owner,
-        address clone,
-        address collateralToken,
-        uint256 collateralToDeposit
-    ) internal {
-        IERC20Metadata(collateralToken).safeTransferFrom(
-            owner,
-            clone,
-            collateralToDeposit
-        );
-        uint256 amountDeposited = IERC20Metadata(collateralToken).balanceOf(
-            clone
-        );
-
-        /*
-            Check that the amount of collateral in the contract is the expected
-            amount deposited. A token could take a fee upon transfer. If the
-            collateralToken takes a fee than the transaction will be reverted. 
-        */
-        if (collateralToDeposit != amountDeposited) {
-            revert InvalidDeposit();
-        }
     }
 }

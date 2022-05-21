@@ -27,58 +27,6 @@ A custom ERC20 token that can be used to issue bonds.The contract handles issuan
       </tr>
 </table>
 
-### CollateralWithdraw
-
-Emitted when collateral is withdrawn.
-
-
-
-
-<table>
-  <tr>
-    <td>address <code>indexed</code></td>
-    <td>from</td>
-      </tr>
-  <tr>
-    <td>address <code>indexed</code></td>
-    <td>receiver</td>
-      </tr>
-  <tr>
-    <td>address <code>indexed</code></td>
-    <td>token</td>
-      </tr>
-  <tr>
-    <td>uint256 </td>
-    <td>amount</td>
-      </tr>
-</table>
-
-### Convert
-
-Emitted when bond shares are converted by a Bond holder.
-
-
-
-
-<table>
-  <tr>
-    <td>address <code>indexed</code></td>
-    <td>from</td>
-      </tr>
-  <tr>
-    <td>address <code>indexed</code></td>
-    <td>collateralToken</td>
-      </tr>
-  <tr>
-    <td>uint256 </td>
-    <td>amountOfBondsConverted</td>
-      </tr>
-  <tr>
-    <td>uint256 </td>
-    <td>amountOfCollateralTokens</td>
-      </tr>
-</table>
-
 ### ExcessPaymentWithdraw
 
 Emitted when payment over the required amount is withdrawn.
@@ -172,20 +120,12 @@ Emitted when a bond share is redeemed.
     <td>paymentToken</td>
       </tr>
   <tr>
-    <td>address <code>indexed</code></td>
-    <td>collateralToken</td>
-      </tr>
-  <tr>
     <td>uint256 </td>
     <td>amountOfBondsRedeemed</td>
       </tr>
   <tr>
     <td>uint256 </td>
     <td>amountOfPaymentTokensReceived</td>
-      </tr>
-  <tr>
-    <td>uint256 </td>
-    <td>amountOfCollateralTokens</td>
       </tr>
 </table>
 
@@ -253,11 +193,6 @@ Emitted when a token is swept by the contract owner.
 
 ### NoPaymentToWithdraw
 * Attempted to withdraw with no excess payment in the contract.
-
-
-
-### NotEnoughCollateral
-* Attempted to withdraw more collateral than available.
 
 
 
@@ -432,76 +367,13 @@ function burnFrom(address account, uint256 amount) external nonpayable
 </table>
 
 
-### collateralBalance
-
-```solidity
-function collateralBalance() external view returns (uint256 collateralTokens)
-```
-
-The external balance of the ERC20 collateral token.
-
-
-#### Returns
-
-
-<table>
-  <tr>
-    <td>
-      uint256    </td>
-        <td>
-    The number of collateralTokens in the contract.    </td>
-      </tr>
-</table>
-
-### collateralRatio
-
-```solidity
-function collateralRatio() external view returns (uint256)
-```
-
-The number of collateralTokens per Bond.
-
-
-#### Returns
-
-
-<table>
-  <tr>
-    <td>
-      uint256    </td>
-        <td>
-    The number of collateralTokens per Bond.    </td>
-      </tr>
-</table>
-
-### collateralToken
-
-```solidity
-function collateralToken() external view returns (address)
-```
-
-The ERC20 token used as collateral backing the bond.
-
-
-#### Returns
-
-
-<table>
-  <tr>
-    <td>
-      address    </td>
-        <td>
-    The collateralToken&#39;s address.    </td>
-      </tr>
-</table>
-
 ### convert
 
 ```solidity
 function convert(uint256 bonds) external nonpayable
 ```
 
-For convertible Bonds (ones with a convertibilityRatio &gt; 0), the Bond holder may convert their bond to underlying collateral at the convertibleRatio. The bond must also have not past maturity for this to be possible.
+
 
 #### Parameters
 
@@ -509,32 +381,9 @@ For convertible Bonds (ones with a convertibilityRatio &gt; 0), the Bond holder 
   <tr>
     <td>uint256 </td>
     <td>bonds</td>
-        <td>
-    The number of bonds which will be burnt and converted into the collateral at the convertibleRatio.    </td>
       </tr>
 </table>
 
-
-### convertibleRatio
-
-```solidity
-function convertibleRatio() external view returns (uint256)
-```
-
-The number of convertibleTokens the bonds will convert into.
-
-
-#### Returns
-
-
-<table>
-  <tr>
-    <td>
-      uint256    </td>
-        <td>
-    The number of convertibleTokens per Bond.    </td>
-      </tr>
-</table>
 
 ### decimals
 
@@ -641,7 +490,7 @@ function increaseAllowance(address spender, uint256 addedValue) external nonpaya
 ### initialize
 
 ```solidity
-function initialize(string bondName, string bondSymbol, address bondOwner, uint256 _maturity, address _paymentToken, address _collateralToken, uint256 _collateralRatio, uint256 _convertibleRatio, uint256 maxSupply) external nonpayable
+function initialize(string bondName, string bondSymbol, address bondOwner, uint256 _maturity, address _paymentToken, uint256 maxSupply) external nonpayable
 ```
 
 This one-time setup initiated by the BondFactory initializes the Bond with the given configuration.
@@ -678,24 +527,6 @@ This one-time setup initiated by the BondFactory initializes the Bond with the g
     <td>_paymentToken</td>
         <td>
     The ERC20 token address the Bond is redeemable for.    </td>
-      </tr>
-  <tr>
-    <td>address </td>
-    <td>_collateralToken</td>
-        <td>
-    The ERC20 token address the Bond is backed by.    </td>
-      </tr>
-  <tr>
-    <td>uint256 </td>
-    <td>_collateralRatio</td>
-        <td>
-    The amount of collateral tokens per bond.    </td>
-      </tr>
-  <tr>
-    <td>uint256 </td>
-    <td>_convertibleRatio</td>
-        <td>
-    The amount of convertible tokens per bond.    </td>
       </tr>
   <tr>
     <td>uint256 </td>
@@ -848,41 +679,10 @@ This is the token the borrower deposits into the contract and what the Bond hold
       </tr>
 </table>
 
-### previewConvertBeforeMaturity
-
-```solidity
-function previewConvertBeforeMaturity(uint256 bonds) external view returns (uint256 collateralTokens)
-```
-
-Before maturity, if the given bonds are converted, this would be the number of collateralTokens received. This function rounds down the number of returned collateral.
-
-#### Parameters
-
-<table>
-  <tr>
-    <td>uint256 </td>
-    <td>bonds</td>
-        <td>
-    The number of bond shares burnt and converted into collateralTokens.    </td>
-      </tr>
-</table>
-
-#### Returns
-
-
-<table>
-  <tr>
-    <td>
-      uint256    </td>
-        <td>
-    The number of collateralTokens the Bonds would be converted into.    </td>
-      </tr>
-</table>
-
 ### previewRedeemAtMaturity
 
 ```solidity
-function previewRedeemAtMaturity(uint256 bonds) external view returns (uint256 paymentTokensToSend, uint256 collateralTokensToSend)
+function previewRedeemAtMaturity(uint256 bonds) external view returns (uint256 paymentTokensToSend)
 ```
 
 At maturity, if the given bond shares are redeemed, this would be the number of collateralTokens and paymentTokens received by the bond holder. The number of paymentTokens to receive is rounded down.
@@ -907,64 +707,6 @@ At maturity, if the given bond shares are redeemed, this would be the number of 
       uint256    </td>
         <td>
     The number of paymentTokens that the bond shares would be redeemed for.    </td>
-      </tr>
-  <tr>
-    <td>
-      uint256    </td>
-        <td>
-    The number of collateralTokens that would be redeemed for.    </td>
-      </tr>
-</table>
-
-### previewWithdrawExcessCollateral
-
-```solidity
-function previewWithdrawExcessCollateral() external view returns (uint256 collateralTokens)
-```
-
-The number of collateralTokens that the owner would be able to  withdraw from the contract. This does not take into account an amount of payment like `previewWithdrawExcessCollateralAfterPayment` does. See that function for more information.
-
-
-#### Returns
-
-
-<table>
-  <tr>
-    <td>
-      uint256    </td>
-        <td>
-    The number of collateralTokens that would be withdrawn.    </td>
-      </tr>
-</table>
-
-### previewWithdrawExcessCollateralAfterPayment
-
-```solidity
-function previewWithdrawExcessCollateralAfterPayment(uint256 payment) external view returns (uint256 collateralTokens)
-```
-
-The number of collateralTokens that the owner would be able to  withdraw from the contract. This function rounds up the number  of collateralTokens required in the contract and therefore may round down the amount received.
-
-#### Parameters
-
-<table>
-  <tr>
-    <td>uint256 </td>
-    <td>payment</td>
-        <td>
-    The number of paymentTokens to add when previewing a withdraw.    </td>
-      </tr>
-</table>
-
-#### Returns
-
-
-<table>
-  <tr>
-    <td>
-      uint256    </td>
-        <td>
-    The number of collateralTokens that would be withdrawn.    </td>
       </tr>
 </table>
 
@@ -1163,32 +905,6 @@ function transferOwnership(address newOwner) external nonpayable
   <tr>
     <td>address </td>
     <td>newOwner</td>
-      </tr>
-</table>
-
-
-### withdrawExcessCollateral
-
-```solidity
-function withdrawExcessCollateral(uint256 amount, address receiver) external nonpayable
-```
-
-The Owner may withdraw excess collateral from the Bond contract. The number of collateralTokens remaining in the contract must be enough to cover the total supply of Bonds in accordance to both the collateralRatio and convertibleRatio.
-
-#### Parameters
-
-<table>
-  <tr>
-    <td>uint256 </td>
-    <td>amount</td>
-        <td>
-    The number of collateralTokens to withdraw. Reverts if the amount is greater than available in the contract.     </td>
-      </tr>
-  <tr>
-    <td>address </td>
-    <td>receiver</td>
-        <td>
-    The address transferred the excess collateralTokens.    </td>
       </tr>
 </table>
 

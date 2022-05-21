@@ -48,15 +48,6 @@ contract Bond is
     /// @inheritdoc IBond
     address public paymentToken;
 
-    /// @inheritdoc IBond
-    address public collateralToken;
-
-    /// @inheritdoc IBond
-    uint256 public collateralRatio;
-
-    /// @inheritdoc IBond
-    uint256 public convertibleRatio;
-
     /**
         @dev Confirms the Bond has not yet matured. This is used on the
             `convert` function because bond shares are convertible only before
@@ -97,53 +88,26 @@ contract Bond is
         address bondOwner,
         uint256 _maturity,
         address _paymentToken,
-        address _collateralToken,
-        uint256 _collateralRatio,
-        uint256 _convertibleRatio,
         uint256 maxSupply
     ) external initializer {
         // Safety checks: Ensure multiplication can not overflow uint256.
         maxSupply * maxSupply;
-        maxSupply * _collateralRatio;
-        maxSupply * _convertibleRatio;
 
         __ERC20_init(bondName, bondSymbol);
         _transferOwnership(bondOwner);
 
         maturity = _maturity;
         paymentToken = _paymentToken;
-        collateralToken = _collateralToken;
-        collateralRatio = _collateralRatio;
-        convertibleRatio = _convertibleRatio;
 
         _mint(bondOwner, maxSupply);
     }
 
-    /// @inheritdoc IBond
     function convert(uint256 bonds) external nonReentrant beforeMaturity {
         if (bonds == 0) {
             revert ZeroAmount();
         }
-        uint256 convertibleTokensToSend = previewConvertBeforeMaturity(bonds);
-        if (convertibleTokensToSend == 0) {
-            revert ZeroAmount();
-        }
 
         burn(bonds);
-
-        address _collateralToken = collateralToken;
-
-        IERC20Metadata(_collateralToken).safeTransfer(
-            _msgSender(),
-            convertibleTokensToSend
-        );
-
-        emit Convert(
-            _msgSender(),
-            _collateralToken,
-            bonds,
-            convertibleTokensToSend
-        );
     }
 
     /// @inheritdoc IBond
@@ -189,19 +153,15 @@ contract Bond is
             revert ZeroAmount();
         }
 
-        (
-            uint256 paymentTokensToSend,
-            uint256 collateralTokensToSend
-        ) = previewRedeemAtMaturity(bonds);
+        uint256 paymentTokensToSend = previewRedeemAtMaturity(bonds);
 
-        if (paymentTokensToSend == 0 && collateralTokensToSend == 0) {
+        if (paymentTokensToSend == 0) {
             revert ZeroAmount();
         }
 
         burn(bonds);
 
         address _paymentToken = paymentToken;
-        address _collateralToken = collateralToken;
 
         if (paymentTokensToSend != 0) {
             IERC20Metadata(_paymentToken).safeTransfer(
@@ -210,43 +170,7 @@ contract Bond is
             );
         }
 
-        if (collateralTokensToSend != 0) {
-            IERC20Metadata(_collateralToken).safeTransfer(
-                _msgSender(),
-                collateralTokensToSend
-            );
-        }
-
-        emit Redeem(
-            _msgSender(),
-            _paymentToken,
-            _collateralToken,
-            bonds,
-            paymentTokensToSend,
-            collateralTokensToSend
-        );
-    }
-
-    /// @inheritdoc IBond
-    function withdrawExcessCollateral(uint256 amount, address receiver)
-        external
-        nonReentrant
-        onlyOwner
-    {
-        if (amount > previewWithdrawExcessCollateral()) {
-            revert NotEnoughCollateral();
-        }
-
-        address _collateralToken = collateralToken;
-
-        IERC20Metadata(_collateralToken).safeTransfer(receiver, amount);
-
-        emit CollateralWithdraw(
-            _msgSender(),
-            receiver,
-            _collateralToken,
-            amount
-        );
+        emit Redeem(_msgSender(), _paymentToken, bonds, paymentTokensToSend);
     }
 
     /// @inheritdoc IBond
@@ -281,8 +205,6 @@ contract Bond is
         // addresses, compare the balances before and after.
         uint256 paymentTokenBalanceBefore = IERC20Metadata(paymentToken)
             .balanceOf(address(this));
-        uint256 collateralTokenBalanceBefore = IERC20Metadata(collateralToken)
-            .balanceOf(address(this));
 
         uint256 sweepingTokenBalance = sweepingToken.balanceOf(address(this));
 
@@ -294,13 +216,8 @@ contract Bond is
 
         uint256 paymentTokenBalanceAfter = IERC20Metadata(paymentToken)
             .balanceOf(address(this));
-        uint256 collateralTokenBalanceAfter = IERC20Metadata(collateralToken)
-            .balanceOf(address(this));
 
-        if (
-            paymentTokenBalanceBefore != paymentTokenBalanceAfter ||
-            collateralTokenBalanceBefore != collateralTokenBalanceAfter
-        ) {
+        if (paymentTokenBalanceBefore != paymentTokenBalanceAfter) {
             revert SweepDisallowedForToken();
         }
 
@@ -313,81 +230,21 @@ contract Bond is
     }
 
     /// @inheritdoc IBond
-    function previewConvertBeforeMaturity(uint256 bonds)
-        public
-        view
-        returns (uint256 collateralTokens)
-    {
-        collateralTokens = bonds.mulWadDown(convertibleRatio);
-    }
 
     /// @inheritdoc IBond
     function previewRedeemAtMaturity(uint256 bonds)
         public
         view
-        returns (uint256 paymentTokensToSend, uint256 collateralTokensToSend)
+        returns (uint256 paymentTokensToSend)
     {
         uint256 bondSupply = totalSupply();
         if (bondSupply == 0) {
-            return (0, 0);
+            return (0);
         }
         uint256 paidAmount = amountUnpaid() == 0
             ? bondSupply
             : paymentBalance();
         paymentTokensToSend = bonds.mulDivDown(paidAmount, bondSupply);
-
-        uint256 nonPaidAmount = bondSupply - paidAmount;
-        collateralTokensToSend = collateralRatio.mulWadDown(
-            bonds.mulDivDown(nonPaidAmount, bondSupply)
-        );
-    }
-
-    /// @inheritdoc IBond
-    function previewWithdrawExcessCollateral()
-        public
-        view
-        returns (uint256 collateralTokens)
-    {
-        collateralTokens = previewWithdrawExcessCollateralAfterPayment(0);
-    }
-
-    /// @inheritdoc IBond
-    function previewWithdrawExcessCollateralAfterPayment(uint256 payment)
-        public
-        view
-        returns (uint256 collateralTokens)
-    {
-        uint256 tokensCoveredByPayment = paymentBalance() + payment;
-        uint256 bondSupply = totalSupply();
-
-        uint256 collateralTokensRequired;
-
-        if (tokensCoveredByPayment < bondSupply) {
-            collateralTokensRequired = (bondSupply - tokensCoveredByPayment)
-                .mulWadUp(collateralRatio);
-        }
-
-        uint256 convertibleTokensRequired = bondSupply.mulWadUp(
-            convertibleRatio
-        );
-
-        uint256 totalRequiredCollateral;
-
-        if (amountUnpaid() == 0) {
-            totalRequiredCollateral = isMature()
-                ? 0 // Paid
-                : convertibleTokensRequired; // PaidEarly
-        } else {
-            totalRequiredCollateral = isMature()
-                ? collateralTokensRequired // Defaulted
-                : _max(convertibleTokensRequired, collateralTokensRequired); // Active
-        }
-        uint256 _collateralBalance = collateralBalance();
-        if (totalRequiredCollateral >= _collateralBalance) {
-            return 0;
-        }
-
-        collateralTokens = _collateralBalance - totalRequiredCollateral;
     }
 
     /// @inheritdoc IBond
@@ -404,17 +261,6 @@ contract Bond is
         }
 
         paymentTokens = _paymentBalance - bondSupply;
-    }
-
-    /// @inheritdoc IBond
-    function collateralBalance()
-        public
-        view
-        returns (uint256 collateralTokens)
-    {
-        collateralTokens = IERC20Metadata(collateralToken).balanceOf(
-            address(this)
-        );
     }
 
     /// @inheritdoc IBond

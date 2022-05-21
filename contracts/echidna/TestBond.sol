@@ -9,11 +9,9 @@ contract TestBond {
     Bond public bond;
 
     TestERC20 public paymentToken;
-    TestERC20 public collateralToken;
 
     uint256 public constant MAX_SUPPLY = 50000000 ether;
-    uint256 internal constant COLLATERAL_RATIO = 1.5 ether;
-    uint256 internal constant CONVERTIBLE_RATIO = .5 ether;
+
     uint256 internal constant ONE = 1e18;
     uint256 internal constant MAX_INT = 2**256 - 1;
     uint256 internal maturity;
@@ -22,7 +20,6 @@ contract TestBond {
         maturity = block.timestamp + 365 days;
 
         paymentToken = new TestERC20("PT", "PT", MAX_INT, 6);
-        collateralToken = new TestERC20("CT", "CT", MAX_INT, 18);
 
         bond = new Bond();
         try
@@ -32,9 +29,6 @@ contract TestBond {
                 address(this),
                 maturity,
                 address(paymentToken),
-                address(collateralToken),
-                COLLATERAL_RATIO,
-                CONVERTIBLE_RATIO,
                 MAX_SUPPLY
             )
         {} catch Error(string memory reason) {
@@ -45,10 +39,7 @@ contract TestBond {
             The BondFactory withdraws this collateral when creating a bond under
             normal circumstances, but we are initializing the bond directly here.
         */
-        collateralToken.transfer(
-            address(bond),
-            (MAX_SUPPLY * COLLATERAL_RATIO) / ONE
-        );
+
         paymentToken.transfer(address(this), MAX_SUPPLY);
     }
 
@@ -72,8 +63,6 @@ contract TestBond {
                 emit AssertionFailed("convertBonds//bond invariant");
             }
         }
-
-        checkGeneralInvariants();
     }
 
     function payPayment(uint256 amount) public {
@@ -89,8 +78,6 @@ contract TestBond {
                 emit AssertionFailed("payPayment//payment invariant");
             }
         }
-
-        checkGeneralInvariants();
     }
 
     function redeemBonds(uint256 amountToRedeem) public {
@@ -107,31 +94,6 @@ contract TestBond {
             ) {
                 emit AssertionFailed(reason);
             }
-        }
-        checkGeneralInvariants();
-    }
-
-    function withdrawExcessCollateral() public {
-        try
-            bond.withdrawExcessCollateral(
-                bond.previewWithdrawExcessCollateral(),
-                msg.sender
-            )
-        {} catch Error(string memory reason) {
-            emit AssertionFailed(reason);
-        }
-        checkGeneralInvariants();
-    }
-
-    function checkGeneralInvariants() internal {
-        if (bond.totalSupply() > MAX_SUPPLY) {
-            emit AssertionFailed("generalInvariants//max supply invariant");
-        }
-        if (
-            collateralToken.balanceOf(address(bond)) <
-            (bond.totalSupply() * COLLATERAL_RATIO) / ONE
-        ) {
-            emit AssertionFailed("generalInvariants//collateral invariant");
         }
     }
 }

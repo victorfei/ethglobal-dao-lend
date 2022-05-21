@@ -26,21 +26,12 @@ interface IBond {
     error NoPaymentToWithdraw();
 
     /// @notice Attempted to withdraw more collateral than available.
-    error NotEnoughCollateral();
 
     /**
         @notice Emitted when bond shares are converted by a Bond holder.
         @param from The address converting their tokens.
-        @param collateralToken The address of the collateralToken.
-        @param amountOfBondsConverted The number of burnt bond shares.
-        @param amountOfCollateralTokens The number of collateralTokens received.
+   
     */
-    event Convert(
-        address indexed from,
-        address indexed collateralToken,
-        uint256 amountOfBondsConverted,
-        uint256 amountOfCollateralTokens
-    );
 
     /**
         @notice Emitted when collateral is withdrawn.
@@ -49,12 +40,6 @@ interface IBond {
         @param token The address of the collateralToken.
         @param amount The number of collateralTokens withdrawn.
     */
-    event CollateralWithdraw(
-        address indexed from,
-        address indexed receiver,
-        address indexed token,
-        uint256 amount
-    );
 
     /**
         @notice Emitted when a portion of the Bond's principal is paid.
@@ -68,19 +53,15 @@ interface IBond {
         @notice Emitted when a bond share is redeemed.
         @param from The Bond holder whose bond shares are burnt.
         @param paymentToken The address of the paymentToken.
-        @param collateralToken The address of the collateralToken.
         @param amountOfBondsRedeemed The number of bond shares burned for
             redemption.
         @param amountOfPaymentTokensReceived The number of paymentTokens.
-        @param amountOfCollateralTokens The number of collateralTokens.
     */
     event Redeem(
         address indexed from,
         address indexed paymentToken,
-        address indexed collateralToken,
         uint256 amountOfBondsRedeemed,
-        uint256 amountOfPaymentTokensReceived,
-        uint256 amountOfCollateralTokens
+        uint256 amountOfPaymentTokensReceived
     );
 
     /**
@@ -121,10 +102,6 @@ interface IBond {
         @notice The external balance of the ERC20 collateral token.
         @return collateralTokens The number of collateralTokens in the contract.
     */
-    function collateralBalance()
-        external
-        view
-        returns (uint256 collateralTokens);
 
     /**
         @notice The number of collateralTokens per Bond.
@@ -132,13 +109,11 @@ interface IBond {
             the decimals of the collateralToken. See BondFactory's `CreateBond`.
         @return The number of collateralTokens per Bond.
     */
-    function collateralRatio() external view returns (uint256);
 
     /**
         @notice The ERC20 token used as collateral backing the bond.
         @return The collateralToken's address.
     */
-    function collateralToken() external view returns (address);
 
     /**
         @notice For convertible Bonds (ones with a convertibilityRatio > 0),
@@ -149,7 +124,6 @@ interface IBond {
         @param bonds The number of bonds which will be burnt and converted
             into the collateral at the convertibleRatio.
     */
-    function convert(uint256 bonds) external;
 
     /**
         @notice The number of convertibleTokens the bonds will convert into.
@@ -159,7 +133,6 @@ interface IBond {
             on this ratio. If this ratio is 0, the bond is not convertible.
         @return The number of convertibleTokens per Bond.
     */
-    function convertibleRatio() external view returns (uint256);
 
     /**
         @notice This one-time setup initiated by the BondFactory initializes the
@@ -176,9 +149,7 @@ interface IBond {
             tokens are minted to. See `initialize` in `Bond`.
         @param _maturity The timestamp at which the Bond will mature.
         @param _paymentToken The ERC20 token address the Bond is redeemable for.
-        @param _collateralToken The ERC20 token address the Bond is backed by.
-        @param _collateralRatio The amount of collateral tokens per bond.
-        @param _convertibleRatio The amount of convertible tokens per bond.
+  
         @param maxSupply The amount of Bonds given to the owner during the one-
             time mint during this initialization.
     */
@@ -188,9 +159,6 @@ interface IBond {
         address bondOwner,
         uint256 _maturity,
         address _paymentToken,
-        address _collateralToken,
-        uint256 _collateralRatio,
-        uint256 _convertibleRatio,
         uint256 maxSupply
     ) external;
 
@@ -246,10 +214,6 @@ interface IBond {
         @return collateralTokens The number of collateralTokens the Bonds would
             be converted into.
     */
-    function previewConvertBeforeMaturity(uint256 bonds)
-        external
-        view
-        returns (uint256 collateralTokens);
 
     /**
         @notice At maturity, if the given bond shares are redeemed, this would
@@ -258,13 +222,12 @@ interface IBond {
         @param bonds The number of Bonds to burn and redeem for tokens.
         @return paymentTokensToSend The number of paymentTokens that the bond
             shares would be redeemed for.
-        @return collateralTokensToSend The number of collateralTokens that would
-            be redeemed for.
+     
     */
     function previewRedeemAtMaturity(uint256 bonds)
         external
         view
-        returns (uint256 paymentTokensToSend, uint256 collateralTokensToSend);
+        returns (uint256 paymentTokensToSend);
 
     /** 
         @notice The number of collateralTokens that the owner would be able to 
@@ -308,10 +271,6 @@ interface IBond {
         @return collateralTokens The number of collateralTokens that would be
             withdrawn.
      */
-    function previewWithdrawExcessCollateralAfterPayment(uint256 payment)
-        external
-        view
-        returns (uint256 collateralTokens);
 
     /**
         @notice The number of collateralTokens that the owner would be able to 
@@ -323,10 +282,6 @@ interface IBond {
         @return collateralTokens The number of collateralTokens that would be
             withdrawn.
     */
-    function previewWithdrawExcessCollateral()
-        external
-        view
-        returns (uint256 collateralTokens);
 
     /**
         @notice The number of excess paymentTokens that the owner would be able
@@ -369,8 +324,6 @@ interface IBond {
             the amount is greater than available in the contract. 
         @param receiver The address transferred the excess collateralTokens.
     */
-    function withdrawExcessCollateral(uint256 amount, address receiver)
-        external;
 
     /**
         @notice The owner can withdraw any excess paymentToken in the contract.

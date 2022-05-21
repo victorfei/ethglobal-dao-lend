@@ -26,9 +26,7 @@ interface IBondFactory {
             address. See `initialize` in `Bond`.
         @param maturity The timestamp at which the Bond will mature.
         @param paymentToken The ERC20 token address the Bond is redeemable for.
-        @param collateralToken The ERC20 token address the Bond is backed by.
-        @param collateralTokenAmount The amount of collateral tokens per bond.
-        @param convertibleTokenAmount The amount of convertible tokens per bond.
+    
         @param bonds The amount of bond shares to give to the owner during the
             one-time mint during the `Bond`'s `initialize`.
     */
@@ -39,9 +37,6 @@ interface IBondFactory {
         address indexed owner,
         uint256 maturity,
         address indexed paymentToken,
-        address indexed collateralToken,
-        uint256 collateralTokenAmount,
-        uint256 convertibleTokenAmount,
         uint256 bonds,
         string daoName
     );
@@ -55,9 +50,6 @@ interface IBondFactory {
     /// @notice Maturity date is not valid.
     error InvalidMaturity();
 
-    /// @notice There must be more collateralTokens than convertibleTokens.
-    error CollateralTokenAmountLessThanConvertibleTokenAmount();
-
     /// @notice Bonds must be minted during initialization.
     error ZeroBondsToMint();
 
@@ -70,9 +62,6 @@ interface IBondFactory {
         @param symbol Passed into the ERC20 token to define the symbol.
         @param maturity The timestamp at which the Bond will mature.
         @param paymentToken The ERC20 token address the Bond is redeemable for.
-        @param collateralToken The ERC20 token address the Bond is backed by.
-        @param collateralTokenAmount The amount of collateral tokens per bond.
-        @param convertibleTokenAmount The amount of convertible tokens per bond.
         @param bonds The amount of Bonds given to the owner during the one-time
             mint during the `Bond`'s `initialize`.
         @dev This uses a clone to save on deployment costs which adds a slight
@@ -85,9 +74,6 @@ interface IBondFactory {
         string memory symbol,
         uint256 maturity,
         address paymentToken,
-        address collateralToken,
-        uint256 collateralTokenAmount,
-        uint256 convertibleTokenAmount,
         uint256 bonds,
         string memory daoName
     ) external returns (address clone);
