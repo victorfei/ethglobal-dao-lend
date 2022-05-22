@@ -435,67 +435,21 @@ One week after the maturity date. Bond collateral can be  redeemed after this da
 ### initialize
 
 ```solidity
-function initialize(string bondName, string bondSymbol, address bondOwner, uint256 _maturity, address _paymentToken, address _collateralToken, uint256 _collateralRatio, uint256 _convertibleRatio, uint256 maxSupply) external nonpayable
+function initialize(BondDetail bondDetail, BondNumericDetail bondNumericDetail) external nonpayable
 ```
 
-This one-time setup initiated by the BondFactory initializes the Bond with the given configuration.
+
 
 #### Parameters
 
 <table>
   <tr>
-    <td>string </td>
-    <td>bondName</td>
-        <td>
-    Passed into the ERC20 token to define the name.    </td>
+    <td>BondDetail </td>
+    <td>bondDetail</td>
       </tr>
   <tr>
-    <td>string </td>
-    <td>bondSymbol</td>
-        <td>
-    Passed into the ERC20 token to define the symbol.    </td>
-      </tr>
-  <tr>
-    <td>address </td>
-    <td>bondOwner</td>
-        <td>
-    Ownership of the created Bond is transferred to this address by way of _transferOwnership and also the address that tokens are minted to. See `initialize` in `Bond`.    </td>
-      </tr>
-  <tr>
-    <td>uint256 </td>
-    <td>_maturity</td>
-        <td>
-    The timestamp at which the Bond will mature.    </td>
-      </tr>
-  <tr>
-    <td>address </td>
-    <td>_paymentToken</td>
-        <td>
-    The ERC20 token address the Bond is redeemable for.    </td>
-      </tr>
-  <tr>
-    <td>address </td>
-    <td>_collateralToken</td>
-        <td>
-    The ERC20 token address the Bond is backed by.    </td>
-      </tr>
-  <tr>
-    <td>uint256 </td>
-    <td>_collateralRatio</td>
-        <td>
-    The amount of collateral tokens per bond.    </td>
-      </tr>
-  <tr>
-    <td>uint256 </td>
-    <td>_convertibleRatio</td>
-        <td>
-    The amount of convertible tokens per bond.    </td>
-      </tr>
-  <tr>
-    <td>uint256 </td>
-    <td>maxSupply</td>
-        <td>
-    The amount of Bonds given to the owner during the one- time mint during this initialization.    </td>
+    <td>BondNumericDetail </td>
+    <td>bondNumericDetail</td>
       </tr>
 </table>
 
@@ -764,6 +718,25 @@ Directly purchases the bond from the contract. Bonds can only purchased using th
       </tr>
 </table>
 
+
+### purchaseBonus
+
+```solidity
+function purchaseBonus() external view returns (uint256)
+```
+
+Used to store the purchase bonus express a number divided by 100 Example: 255 / 100 = 2.55%
+
+
+#### Returns
+
+
+<table>
+  <tr>
+    <td>
+      uint256    </td>
+      </tr>
+</table>
 
 ### redeem
 

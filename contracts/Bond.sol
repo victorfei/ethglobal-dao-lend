@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity 0.8.9;
-import {IBond} from "./interfaces/IBond.sol";
+import {BondDetail, BondNumericDetail, IBond} from "./interfaces/IBond.sol";
 
 import {ERC20BurnableUpgradeable, IERC20MetadataUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20BurnableUpgradeable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
@@ -56,6 +56,9 @@ contract Bond is
     /// @inheritdoc IBond
     uint256 public convertibleRatio;
 
+    /// @inheritdoc IBond
+    uint256 public purchaseBonus;
+
 
     /**
         @dev Confirms the Bond has not yet matured. This is used on the
@@ -91,32 +94,23 @@ contract Bond is
     }
 
     /// @inheritdoc IBond
-    function initialize(
-        string memory bondName,
-        string memory bondSymbol,
-        address bondOwner,
-        uint256 _maturity,
-        address _paymentToken,
-        address _collateralToken,
-        uint256 _collateralRatio,
-        uint256 _convertibleRatio,
-        uint256 maxSupply
-    ) external initializer {
+    function initialize(BondDetail memory bondDetail, BondNumericDetail memory bondNumericDetail ) external initializer {
         // Safety checks: Ensure multiplication can not overflow uint256.
-        maxSupply * maxSupply;
-        maxSupply * _collateralRatio;
-        maxSupply * _convertibleRatio;
+        bondNumericDetail.maxSupply * bondNumericDetail.maxSupply;
+        bondNumericDetail.maxSupply * bondNumericDetail.collateralRatio;
+        bondNumericDetail.maxSupply * bondNumericDetail.convertibleRatio;
 
-        __ERC20_init(bondName, bondSymbol);
-        _transferOwnership(bondOwner);
+        __ERC20_init(bondDetail.bondName, bondDetail.bondSymbol);
+        _transferOwnership(bondDetail.bondOwner);
 
-        maturity = _maturity;
-        paymentToken = _paymentToken;
-        collateralToken = _collateralToken;
-        collateralRatio = _collateralRatio;
-        convertibleRatio = _convertibleRatio;
+        maturity = bondNumericDetail.maturity;
+        paymentToken = bondDetail.paymentToken;
+        collateralToken = bondDetail.collateralToken;
+        collateralRatio = bondNumericDetail.collateralRatio;
+        convertibleRatio = bondNumericDetail.convertibleRatio;
+        purchaseBonus = bondNumericDetail.purchaseBonus;
 
-        _mint(address(this), maxSupply);
+        _mint(address(this), bondNumericDetail.maxSupply);
     }
 
     /// @inheritdoc IBond
@@ -419,10 +413,15 @@ contract Bond is
 
         // Transfers the payment token to the owner. Reverts if there is not enough
         IERC20Metadata(paymentToken).safeTransferFrom(msg.sender, owner(), amount);
-
+        
+        // Calculate the bonus amount based off of the interest
+        uint256 bonusAmount = amount.divWadDown(100).mulWadUp(purchaseBonus);
+        uint256 bondAmount = amount + bonusAmount;
         // Transfers the bonds to the buyer
-        _approve(bondContract, msg.sender, amount);
-        transferFrom(bondContract, msg.sender, amount);
+        _approve(bondContract, msg.sender, bondAmount);
+
+        // Calculate the bonus
+        transferFrom(bondContract, msg.sender, bondAmount);
 
         emit BondPurchased(msg.sender, amount, balanceOf(bondContract));
     }

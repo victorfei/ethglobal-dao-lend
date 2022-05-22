@@ -18,12 +18,28 @@ Emitted when a new bond is created.
     <td>newBond</td>
       </tr>
   <tr>
+    <td>string </td>
+    <td>name</td>
+      </tr>
+  <tr>
+    <td>string </td>
+    <td>symbol</td>
+      </tr>
+  <tr>
     <td>address <code>indexed</code></td>
     <td>owner</td>
       </tr>
   <tr>
-    <td>IBondFactory.CreateBondDetails </td>
-    <td>_bond</td>
+    <td>uint256 </td>
+    <td>maturity</td>
+      </tr>
+  <tr>
+    <td>address <code>indexed</code></td>
+    <td>paymentToken</td>
+      </tr>
+  <tr>
+    <td>uint256 </td>
+    <td>bonds</td>
       </tr>
 </table>
 

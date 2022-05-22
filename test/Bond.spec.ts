@@ -116,65 +116,77 @@ describe("Bond", () => {
             collateralToken,
             nonConvertible: {
               bond: await getBondContract(
-                factory.createBond(
-                  "Bond",
-                  "LUG",
-                  NonConvertibleBondConfig.maturity,
-                  paymentToken.address,
-                  collateralToken.address,
-                  NonConvertibleBondConfig.collateralTokenAmount,
-                  NonConvertibleBondConfig.convertibleTokenAmount,
-                  NonConvertibleBondConfig.maxSupply,
-                  "Uniswap"
-                )
+                factory.createBond({
+                  name: "Bond",
+                  symbol: "LUG",
+                  maturity: NonConvertibleBondConfig.maturity,
+                  paymentToken: paymentToken.address,
+                  collateralToken: collateralToken.address,
+                  collateralTokenAmount:
+                    NonConvertibleBondConfig.collateralTokenAmount,
+                  convertibleTokenAmount:
+                    NonConvertibleBondConfig.convertibleTokenAmount,
+                  bonds: NonConvertibleBondConfig.maxSupply,
+                  daoName: "Uniswap",
+                  interestRate: 2,
+                })
               ),
               config: NonConvertibleBondConfig,
             },
             convertible: {
               bond: await getBondContract(
-                factory.createBond(
-                  "Bond",
-                  "LUG",
-                  ConvertibleBondConfig.maturity,
-                  paymentToken.address,
-                  collateralToken.address,
-                  ConvertibleBondConfig.collateralTokenAmount,
-                  ConvertibleBondConfig.convertibleTokenAmount,
-                  ConvertibleBondConfig.maxSupply,
-                  "Uniswap"
-                )
+                factory.createBond({
+                  name: "Bond",
+                  symbol: "LUG",
+                  maturity: NonConvertibleBondConfig.maturity,
+                  paymentToken: paymentToken.address,
+                  collateralToken: collateralToken.address,
+                  collateralTokenAmount:
+                    NonConvertibleBondConfig.collateralTokenAmount,
+                  convertibleTokenAmount:
+                    NonConvertibleBondConfig.convertibleTokenAmount,
+                  bonds: NonConvertibleBondConfig.maxSupply,
+                  daoName: "Uniswap",
+                  interestRate: 2,
+                })
               ),
               config: ConvertibleBondConfig,
             },
             uncollateralized: {
               bond: await getBondContract(
-                factory.createBond(
-                  "Bond",
-                  "LUG",
-                  UncollateralizedBondConfig.maturity,
-                  paymentToken.address,
-                  collateralToken.address,
-                  UncollateralizedBondConfig.collateralTokenAmount,
-                  UncollateralizedBondConfig.convertibleTokenAmount,
-                  UncollateralizedBondConfig.maxSupply,
-                  "Uniswap"
-                )
+                factory.createBond({
+                  name: "Bond",
+                  symbol: "LUG",
+                  maturity: NonConvertibleBondConfig.maturity,
+                  paymentToken: paymentToken.address,
+                  collateralToken: collateralToken.address,
+                  collateralTokenAmount:
+                    NonConvertibleBondConfig.collateralTokenAmount,
+                  convertibleTokenAmount:
+                    NonConvertibleBondConfig.convertibleTokenAmount,
+                  bonds: NonConvertibleBondConfig.maxSupply,
+                  daoName: "Uniswap",
+                  interestRate: 2,
+                })
               ),
               config: UncollateralizedBondConfig,
             },
             malicious: {
               bond: await getBondContract(
-                factory.createBond(
-                  "Bond",
-                  "LUG",
-                  MaliciousBondConfig.maturity,
-                  attackingToken.address,
-                  collateralToken.address,
-                  MaliciousBondConfig.collateralTokenAmount,
-                  MaliciousBondConfig.convertibleTokenAmount,
-                  MaliciousBondConfig.maxSupply,
-                  "Uniswap"
-                )
+                factory.createBond({
+                  name: "Bond",
+                  symbol: "LUG",
+                  maturity: NonConvertibleBondConfig.maturity,
+                  paymentToken: paymentToken.address,
+                  collateralToken: collateralToken.address,
+                  collateralTokenAmount:
+                    NonConvertibleBondConfig.collateralTokenAmount,
+                  convertibleTokenAmount:
+                    NonConvertibleBondConfig.convertibleTokenAmount,
+                  bonds: NonConvertibleBondConfig.maxSupply,
+                  daoName: "Uniswap",
+                  interestRate: 2,
+                })
               ),
               config: MaliciousBondConfig,
             },
@@ -244,18 +256,39 @@ describe("Bond", () => {
               "Initializable: contract is already initialized"
             );
           });
+
+          //   BondDetail memory bondDetail = BondDetail ({
+          //     bondName: _bond.name,
+          //     bondSymbol: _bond.symbol,
+          //     bondOwner: _msgSender(),
+          //     collateralToken: _bond.collateralToken,
+          //     paymentToken: _bond.paymentToken
+          // });
+
+          // BondNumericDetail memory bondNumericDetail = BondNumericDetail ({
+          //     maturity: _bond.maturity,
+          //     collateralRatio: collateralRatio,
+          //     convertibleRatio: convertibleRatio,
+          //     purchaseBonus: _bond.interestRate,
+          //     maxSupply: _bond.bonds
+          // });
           it("should disallow calling initialize again", async () => {
             await expect(
               bond.initialize(
-                "Bond",
-                "LUG",
-                owner.address,
-                config.maturity,
-                paymentToken.address,
-                collateralToken.address,
-                utils.parseUnits(".25", decimals),
-                utils.parseUnits(".5", decimals),
-                config.maxSupply
+                {
+                  bondName: "Bond",
+                  bondSymbol: "LUG",
+                  bondOwner: owner.address,
+                  paymentToken: paymentToken.address,
+                  collateralToken: collateralToken.address,
+                },
+                {
+                  collateralRatio: utils.parseUnits(".25", decimals),
+                  convertibleRatio: utils.parseUnits(".5", decimals),
+                  maxSupply: config.maxSupply,
+                  maturity: config.maturity,
+                  purchaseBonus: 250,
+                }
               )
             ).to.be.revertedWith(
               "Initializable: contract is already initialized"
@@ -1155,17 +1188,20 @@ describe("Bond", () => {
             );
 
             expect(bondOwnerNewBalance).to.gt(bondOwnerBalance);
+            expect(bondOwnerNewBalance).to.gt(
+              ethers.constants.One.div(100).mul(110)
+            );
           });
 
           it("should transfer the bond to the buyer", async () => {
-            const seventeen = ethers.constants.One.mul(17);
+            const hundred = ethers.constants.One.mul(100);
             await paymentToken
               .connect(bondBuyer)
-              .approve(bond.address, seventeen);
+              .approve(bond.address, hundred);
 
-            await bond.connect(bondBuyer).purchaseBond(seventeen);
+            await bond.connect(bondBuyer).purchaseBond(hundred);
 
-            expect(await bond.balanceOf(bondBuyer.address)).to.eq(seventeen);
+            expect(await bond.balanceOf(bondBuyer.address)).to.equal(102);
           });
         });
       });
