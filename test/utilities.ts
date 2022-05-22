@@ -234,19 +234,20 @@ export const createBond = async (
     collateralTokenContract,
     config
   );
-  const bond = await getBondContract(
-    factory.createBond(
-      bondName,
-      bondSymbol,
-      config.maturity,
-      paymentToken,
-      collateralToken,
-      config.collateralTokenAmount,
-      config.convertibleTokenAmount,
-      config.maxSupply,
-      daoName
-    )
-  );
+
+  const bondTestObject = {
+    name: bondName,
+    symbol: bondSymbol,
+    maturity: config.maturity,
+    paymentToken: paymentToken,
+    collateralToken: collateralToken,
+    collateralTokenAmount: config.collateralTokenAmount,
+    convertibleTokenAmount: config.convertibleTokenAmount,
+    bonds: config.maxSupply,
+    daoName: daoName,
+    interestRate: 1,
+  };
+  const bond = await getBondContract(factory.createBond(bondTestObject));
   return await bond;
 };
 
