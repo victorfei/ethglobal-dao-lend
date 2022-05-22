@@ -32,16 +32,24 @@ interface IBondFactory {
     /**
         @notice Emitted when a new bond is created.
         @param newBond The address of the newly deployed bond.
-
+        @param name Passed into the ERC20 token to define the name.
+        @param symbol Passed into the ERC20 token to define the symbol.
         @param owner Ownership of the created Bond is transferred to this
             address by way of _transferOwnership and tokens are minted to this
             address. See `initialize` in `Bond`.
-      
+        @param maturity The timestamp at which the Bond will mature.
+        @param paymentToken The ERC20 token address the Bond is redeemable for.
+        @param bonds The amount of bond shares to give to the owner during the
+            one-time mint during the `Bond`'s `initialize`.
     */
     event BondCreated(
         address newBond,
+        string name,
+        string symbol,
         address indexed owner,
-        CreateBondDetails _bond
+        uint256 maturity,
+        address indexed paymentToken,
+        uint256 bonds
     );
 
     /// @notice Fails if the collateralToken takes a fee.

@@ -3,6 +3,22 @@ pragma solidity 0.8.9;
 
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
+struct BondDetail {
+    string bondName;
+    string bondSymbol;
+    address bondOwner;
+    address paymentToken;
+    address collateralToken;
+}
+
+struct BondNumericDetail {
+    uint256 maturity;
+    uint256 collateralRatio;
+    uint256 convertibleRatio;
+    uint256 purchaseBonus;
+    uint256 maxSupply;
+}
+
 interface IBond {
     /// @notice Operation restricted because the Bond has matured.
     error BondPastMaturity();
@@ -148,6 +164,13 @@ interface IBond {
     */
     function collateralToken() external view returns (address);
 
+    
+    /**
+        @notice Used to store the purchase bonus express a number divided by 100
+        Example: 255 / 100 = 2.55%
+    */
+    function purchaseBonus() external view returns(uint256);
+
     /**
         @notice For convertible Bonds (ones with a convertibilityRatio > 0),
             the Bond holder may convert their bond to underlying collateral at
@@ -177,30 +200,21 @@ interface IBond {
             owner would be set to the BondFactory's Address. Additionally,
             __ERC20Burnable_init is not called because it generates an empty
             function.
-        @param bondName Passed into the ERC20 token to define the name.
-        @param bondSymbol Passed into the ERC20 token to define the symbol.
-        @param bondOwner Ownership of the created Bond is transferred to this
-            address by way of _transferOwnership and also the address that
-            tokens are minted to. See `initialize` in `Bond`.
-        @param _maturity The timestamp at which the Bond will mature.
-        @param _paymentToken The ERC20 token address the Bond is redeemable for.
-        @param _collateralToken The ERC20 token address the Bond is backed by.
-        @param _collateralRatio The amount of collateral tokens per bond.
-        @param _convertibleRatio The amount of convertible tokens per bond.
-        @param maxSupply The amount of Bonds given to the owner during the one-
+        @param bondDetail which contains: 
+            bondName Passed into the ERC20 token to define the name.
+            bondSymbol Passed into the ERC20 token to define the symbol.
+            bondOwner Ownership of the created Bond is transferred to this
+                address by way of _transferOwnership and also the address that
+                tokens are minted to. See `initialize` in `Bond`.
+            _maturity The timestamp at which the Bond will mature.
+            _paymentToken The ERC20 token address the Bond is redeemable for.
+            _collateralToken The ERC20 token address the Bond is backed by.
+            _collateralRatio The amount of collateral tokens per bond.
+            _convertibleRatio The amount of convertible tokens per bond.
+            maxSupply The amount of Bonds given to the owner during the one-
             time mint during this initialization.
     */
-    function initialize(
-        string memory bondName,
-        string memory bondSymbol,
-        address bondOwner,
-        uint256 _maturity,
-        address _paymentToken,
-        address _collateralToken,
-        uint256 _collateralRatio,
-        uint256 _convertibleRatio,
-        uint256 maxSupply
-    ) external;
+    function initialize(BondDetail memory bondDetail, BondNumericDetail memory bondNumericDetail) external;
 
     /**
         @notice Checks if the maturity timestamp has passed.

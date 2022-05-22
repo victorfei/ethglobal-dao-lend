@@ -20,14 +20,40 @@ Emitted when a new bond is created.
     The address of the newly deployed bond.    </td>
       </tr>
   <tr>
+    <td>string </td>
+    <td>name</td>
+        <td>
+    Passed into the ERC20 token to define the name.    </td>
+      </tr>
+  <tr>
+    <td>string </td>
+    <td>symbol</td>
+        <td>
+    Passed into the ERC20 token to define the symbol.    </td>
+      </tr>
+  <tr>
     <td>address <code>indexed</code></td>
     <td>owner</td>
         <td>
     Ownership of the created Bond is transferred to this address by way of _transferOwnership and tokens are minted to this address. See `initialize` in `Bond`.    </td>
       </tr>
   <tr>
-    <td>IBondFactory.CreateBondDetails </td>
-    <td>_bond</td>
+    <td>uint256 </td>
+    <td>maturity</td>
+        <td>
+    The timestamp at which the Bond will mature.    </td>
+      </tr>
+  <tr>
+    <td>address <code>indexed</code></td>
+    <td>paymentToken</td>
+        <td>
+    The ERC20 token address the Bond is redeemable for.    </td>
+      </tr>
+  <tr>
+    <td>uint256 </td>
+    <td>bonds</td>
+        <td>
+    The amount of bond shares to give to the owner during the one-time mint during the `Bond`&#39;s `initialize`.    </td>
       </tr>
 </table>
 

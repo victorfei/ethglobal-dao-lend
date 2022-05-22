@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity 0.8.9;
-
 import {IBondFactory} from "./interfaces/IBondFactory.sol";
 
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
@@ -123,34 +122,58 @@ contract BondFactory is IBondFactory, AccessControl {
 
         {
             clone = Clones.clone(tokenImplementation);
-
             isBond[clone] = true;
-            uint256 collateralRatio = _bond.collateralTokenAmount.divWadDown(
-                _bond.bonds
-            );
-            uint256 convertibleRatio = _bond.convertibleTokenAmount.divWadDown(
-                _bond.bonds
-            );
-            _deposit(
-                _msgSender(),
-                clone,
-                _bond.collateralToken,
-                _bond.collateralTokenAmount
-            );
-
-            Bond(clone).initialize(
-                _bond.name,
-                _bond.symbol,
-                _msgSender(),
-                _bond.maturity,
-                _bond.paymentToken,
-                _bond.collateralToken,
-                collateralRatio,
-                convertibleRatio,
-                _bond.bonds
-            );
         }
-        emit BondCreated(clone, _msgSender(), _bond);
+
+        uint256 collateralRatio = _bond.collateralTokenAmount.divWadDown(
+            _bond.bonds
+        );
+        uint256 convertibleRatio = _bond.convertibleTokenAmount.divWadDown(
+            _bond.bonds
+        );
+        _deposit(
+            _msgSender(),
+            clone,
+            _bond.collateralToken,
+            _bond.collateralTokenAmount
+        );
+        BondDetail memory bondDetail = BondDetail ({
+            bondName: _bond.name,
+            bondSymbol: _bond.symbol,
+            bondOwner: _msgSender(),
+            collateralToken: _bond.collateralToken,
+            paymentToken: _bond.paymentToken
+        });
+
+        uint256 bonusAmount = _bond.bonds.divWadDown(100).mulWadUp(_bond.interestRate);
+        uint256 maxSupply = _bond.bonds + bonusAmount;
+        BondNumericDetail memory bondNumericDetail = BondNumericDetail ({
+            maturity: _bond.maturity,
+            collateralRatio: collateralRatio,
+            convertibleRatio: convertibleRatio,
+            purchaseBonus: _bond.interestRate,
+            maxSupply: maxSupply
+        });
+
+        {
+            Bond(clone).initialize(bondDetail, bondNumericDetail);
+        }
+        
+        // TODO does not work with struct datatype. need to fix later.
+        // emit BondCreated(clone, _msgSender(), _bond);
+        emitBondCreated(clone, _msgSender(), _bond);
+    }
+
+    function emitBondCreated(address clone, address msgSender, CreateBondDetails memory _bond) internal {
+        emit BondCreated(
+            clone,
+            _bond.name,
+            _bond.symbol,
+            msgSender,
+            _bond.maturity,
+            _bond.paymentToken,
+            _bond.bonds
+        );
     }
 
     function _deposit(

@@ -72,17 +72,18 @@ describe("BondFactory", async () => {
       factory.address,
       BondConfig.collateralTokenAmount
     );
-    return factory.createBond(
-      "Bond",
-      "LUG",
-      testmaturity,
-      testPaymentToken,
-      testCollateralToken,
-      testCollateralTokenAmount,
-      testConvertibleTokenAmount,
-      testMaxSupply,
-      "Uniswap"
-    );
+    return factory.createBond({
+      name: "Bond",
+      symbol: "LUG",
+      maturity: testmaturity,
+      paymentToken: testPaymentToken,
+      collateralToken: testCollateralToken,
+      collateralTokenAmount: testCollateralTokenAmount,
+      convertibleTokenAmount: testConvertibleTokenAmount,
+      bonds: testMaxSupply,
+      daoName: "Uniswap",
+      interestRate: 250,
+    });
   }
 
   describe("#createBond", async () => {
