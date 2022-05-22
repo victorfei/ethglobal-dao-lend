@@ -2,6 +2,19 @@
 pragma solidity 0.8.9;
 
 interface IBondFactory {
+    struct CreateBondDetails {
+        string name;
+        string symbol;
+        uint256 maturity;
+        address paymentToken;
+        address collateralToken;
+        uint256 collateralTokenAmount;
+        uint256 convertibleTokenAmount;
+        uint256 bonds;
+        string daoName;
+        uint256 interestRate;
+    }
+
     /**
         @notice Emitted when the restriction of bond creation to allow-listed
             accounts is toggled on or off.
@@ -19,31 +32,16 @@ interface IBondFactory {
     /**
         @notice Emitted when a new bond is created.
         @param newBond The address of the newly deployed bond.
-        @param name Passed into the ERC20 token to define the name.
-        @param symbol Passed into the ERC20 token to define the symbol.
+
         @param owner Ownership of the created Bond is transferred to this
             address by way of _transferOwnership and tokens are minted to this
             address. See `initialize` in `Bond`.
-        @param maturity The timestamp at which the Bond will mature.
-        @param paymentToken The ERC20 token address the Bond is redeemable for.
-        @param collateralToken The ERC20 token address the Bond is backed by.
-        @param collateralTokenAmount The amount of collateral tokens per bond.
-        @param convertibleTokenAmount The amount of convertible tokens per bond.
-        @param bonds The amount of bond shares to give to the owner during the
-            one-time mint during the `Bond`'s `initialize`.
+      
     */
     event BondCreated(
         address newBond,
-        string name,
-        string symbol,
         address indexed owner,
-        uint256 maturity,
-        address indexed paymentToken,
-        address indexed collateralToken,
-        uint256 collateralTokenAmount,
-        uint256 convertibleTokenAmount,
-        uint256 bonds,
-        string daoName
+        CreateBondDetails _bond
     );
 
     /// @notice Fails if the collateralToken takes a fee.
@@ -64,33 +62,9 @@ interface IBondFactory {
     /// @notice The paymentToken and collateralToken must be different.
     error TokensMustBeDifferent();
 
-    /**
-        @notice Creates a new Bond. The calculated ratios are rounded down.
-        @param name Passed into the ERC20 token to define the name.
-        @param symbol Passed into the ERC20 token to define the symbol.
-        @param maturity The timestamp at which the Bond will mature.
-        @param paymentToken The ERC20 token address the Bond is redeemable for.
-        @param collateralToken The ERC20 token address the Bond is backed by.
-        @param collateralTokenAmount The amount of collateral tokens per bond.
-        @param convertibleTokenAmount The amount of convertible tokens per bond.
-        @param bonds The amount of Bonds given to the owner during the one-time
-            mint during the `Bond`'s `initialize`.
-        @dev This uses a clone to save on deployment costs which adds a slight
-            overhead when users interact with the bonds, but also saves on gas
-            during every deployment. Emits `BondCreated` event.
-        @return clone The address of the newly created Bond.
-    */
-    function createBond(
-        string memory name,
-        string memory symbol,
-        uint256 maturity,
-        address paymentToken,
-        address collateralToken,
-        uint256 collateralTokenAmount,
-        uint256 convertibleTokenAmount,
-        uint256 bonds,
-        string memory daoName
-    ) external returns (address clone);
+    function createBond(CreateBondDetails calldata _bond)
+        external
+        returns (address clone);
 
     /**  
         @notice If enabled, issuance is restricted to those with ISSUER_ROLE.

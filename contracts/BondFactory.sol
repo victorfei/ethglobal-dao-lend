@@ -90,81 +90,67 @@ contract BondFactory is IBondFactory, AccessControl {
     }
 
     /// @inheritdoc IBondFactory
-    function createBond(
-        string memory name,
-        string memory symbol,
-        uint256 maturity,
-        address paymentToken,
-        address collateralToken,
-        uint256 collateralTokenAmount,
-        uint256 convertibleTokenAmount,
-        uint256 bonds,
-        string memory daoName
-    ) external onlyIssuer returns (address clone) {
-        if (bonds == 0) {
+    function createBond(CreateBondDetails calldata _bond)
+        external
+        onlyIssuer
+        returns (address clone)
+    {
+        if (_bond.bonds == 0) {
             revert ZeroBondsToMint();
         }
-        if (paymentToken == collateralToken) {
+        if (_bond.paymentToken == _bond.collateralToken) {
             revert TokensMustBeDifferent();
         }
-        if (collateralTokenAmount < convertibleTokenAmount) {
+        if (_bond.collateralTokenAmount < _bond.convertibleTokenAmount) {
             revert CollateralTokenAmountLessThanConvertibleTokenAmount();
         }
         if (
-            maturity <= block.timestamp ||
-            maturity > block.timestamp + MAX_TIME_TO_MATURITY
+            _bond.maturity <= block.timestamp ||
+            _bond.maturity > block.timestamp + MAX_TIME_TO_MATURITY
         ) {
             revert InvalidMaturity();
         }
         if (
-            IERC20Metadata(paymentToken).decimals() > MAX_DECIMALS ||
-            IERC20Metadata(collateralToken).decimals() > MAX_DECIMALS
+            IERC20Metadata(_bond.paymentToken).decimals() > MAX_DECIMALS ||
+            IERC20Metadata(_bond.collateralToken).decimals() > MAX_DECIMALS
         ) {
             revert TooManyDecimals();
         }
         if (isTokenAllowListEnabled) {
-            _checkRole(ALLOWED_TOKEN, paymentToken);
-            _checkRole(ALLOWED_TOKEN, collateralToken);
+            _checkRole(ALLOWED_TOKEN, _bond.paymentToken);
+            _checkRole(ALLOWED_TOKEN, _bond.collateralToken);
         }
 
         {
             clone = Clones.clone(tokenImplementation);
 
             isBond[clone] = true;
-            uint256 collateralRatio = collateralTokenAmount.divWadDown(bonds);
-            uint256 convertibleRatio = convertibleTokenAmount.divWadDown(bonds);
+            uint256 collateralRatio = _bond.collateralTokenAmount.divWadDown(
+                _bond.bonds
+            );
+            uint256 convertibleRatio = _bond.convertibleTokenAmount.divWadDown(
+                _bond.bonds
+            );
             _deposit(
                 _msgSender(),
                 clone,
-                collateralToken,
-                collateralTokenAmount
+                _bond.collateralToken,
+                _bond.collateralTokenAmount
             );
 
             Bond(clone).initialize(
-                name,
-                symbol,
+                _bond.name,
+                _bond.symbol,
                 _msgSender(),
-                maturity,
-                paymentToken,
-                collateralToken,
+                _bond.maturity,
+                _bond.paymentToken,
+                _bond.collateralToken,
                 collateralRatio,
                 convertibleRatio,
-                bonds
+                _bond.bonds
             );
         }
-        emit BondCreated(
-            clone,
-            name,
-            symbol,
-            _msgSender(),
-            maturity,
-            paymentToken,
-            collateralToken,
-            collateralTokenAmount,
-            convertibleTokenAmount,
-            bonds,
-            daoName
-        );
+        emit BondCreated(clone, _msgSender(), _bond);
     }
 
     function _deposit(
